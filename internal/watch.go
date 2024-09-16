@@ -4,8 +4,20 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
+
+var ignoredFiles = []string{
+	".DS_Store",
+	".Trashes",
+	".Spotlight-V100",
+	".fseventsd",
+	".AppleDouble",
+	"._*",
+	".DocumentRevisions-V100",
+	".PKG",
+}
 
 func WatchFolder(watchPath string, done chan bool) {
 	knownFiles := make(map[string]time.Time)
@@ -35,7 +47,7 @@ func updateKnownFiles(watchPath string, knownFiles map[string]time.Time) {
 	}
 
 	for _, file := range files {
-		if !file.IsDir() {
+		if !file.IsDir() && !isIgnored(file.Name()) {
 			fullPath := filepath.Join(watchPath, file.Name())
 			info, err := file.Info()
 			if err != nil {
@@ -55,7 +67,7 @@ func checkForNewFiles(watchPath string, knownFiles map[string]time.Time) {
 	}
 
 	for _, file := range files {
-		if !file.IsDir() {
+		if !file.IsDir() && !isIgnored(file.Name()) {
 			fullPath := filepath.Join(watchPath, file.Name())
 			info, err := file.Info()
 			if err != nil {
@@ -70,4 +82,16 @@ func checkForNewFiles(watchPath string, knownFiles map[string]time.Time) {
 			}
 		}
 	}
+}
+func isIgnored(fileName string) bool {
+	for _, ignored := range ignoredFiles {
+		// Check for exact match or prefix match (for patterns like "._*")
+		if strings.HasPrefix(ignored, "._") && strings.HasPrefix(fileName, "._") {
+			return true
+		}
+		if fileName == ignored {
+			return true
+		}
+	}
+	return false
 }
