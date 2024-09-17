@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	watch "fret-files/internal"
+	watch "fret-files/internal/watch"
 
 	"github.com/joho/godotenv"
 )
