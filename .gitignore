@@ -21,3 +21,5 @@ go.work.sum
 
 # Environment variable files
 .env
+daemon.log
+mydaemon

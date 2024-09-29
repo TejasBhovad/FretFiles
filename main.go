@@ -9,9 +9,31 @@ import (
 	watch "fret-files/internal/watch"
 
 	"github.com/joho/godotenv"
+	"github.com/sevlyar/go-daemon"
 )
 
 func main() {
+	cntxt := &daemon.Context{
+		PidFileName: "daemon.pid",
+		PidFilePerm: 0644,
+		LogFileName: "daemon.log",
+		LogFilePerm: 0640,
+		WorkDir:     "./",
+		Umask:       027,
+		Args:        []string{"[daemon]"},
+	}
+
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
+	defer cntxt.Release()
+
+	log.Println("Daemon started")
+
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -35,4 +57,6 @@ func main() {
 		done <- true
 	case <-done:
 	}
+
+	log.Println("Daemon terminated")
 }
